@@ -158,17 +158,3 @@ Beyond the slash commands, this plugin includes a `supply-chain-hardening` skill
 - Ready-to-use configuration snippets for all supported package managers and tools
 
 Just ask Claude something like *"How do I prevent dependency confusion attacks?"* and it will pull from this knowledge automatically.
-
-## FAQ
-
-**Do I need to be a security expert to use this?**
-No. The commands explain each finding in plain language and handle the fixes for you.
-
-**Will this break my project?**
-Action commands make changes directly but explain each one. For dangerous changes (like modifying `pull_request_target` triggers), they flag the issue and let you decide. Walkthrough commands guide you step by step and always tell you what to test before going live.
-
-**How often should I run the audit?**
-Run it whenever you add new dependencies, change your CI pipeline, or update your Dockerfile. A good habit is to run it before each release.
-
-**What if a domain doesn't apply to my project?**
-The audit auto-detects what's relevant. If you don't have Terraform files, for example, it simply skips that domain.
