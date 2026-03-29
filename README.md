@@ -1,6 +1,6 @@
 # Supply Chain Security Plugin for Claude Code
 
-Protect your projects from supply chain attacks - right from Claude Code. No security expertise required.
+Protect your projects from supply chain attacks with Claude.
 
 ## What Is This?
 
@@ -18,7 +18,7 @@ This plugin gives Claude Code the ability to **audit your project** for supply c
 | **IDE Extensions** | A VS Code extension exfiltrates code from your workspace |
 | **Credentials** | A leaked API key or long-lived token enables lateral movement across services |
 
-Based on the [Latio Tech](https://latio.tech) Supply Chain Security Maturity Matrix, aligned to OWASP SAMM and SLSA.
+Based on the [Latio](https://latio.com) Supply Chain Security Checklist
 
 ## Getting Started
 
