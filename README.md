@@ -31,7 +31,7 @@ Based on the [Latio](https://latio.com) Supply Chain Security Checklist
 Add the marketplace and install the plugin from within Claude Code:
 
 ```
-/plugin marketplace add confusedcrib/secure-supply-chain-skills
+/plugin marketplace add latiotech/secure-supply-chain-skills
 /plugin install supply-chain-security@secure-supply-chain
 ```
 
