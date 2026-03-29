@@ -1,0 +1,9 @@
+{
+  "name": "supply-chain-security",
+  "version": "0.2.0",
+  "description": "Audit and harden your software supply chain - packages, containers, GitHub Actions, IaC, AI/ML models, and IDE extensions. Action commands fix issues directly; walkthrough commands guide you through advanced setup.",
+  "author": {
+    "name": "Latio Tech"
+  },
+  "keywords": ["supply-chain", "security", "hardening", "packages", "containers", "github-actions", "iac", "oidc", "sigstore", "sbom"]
+}
