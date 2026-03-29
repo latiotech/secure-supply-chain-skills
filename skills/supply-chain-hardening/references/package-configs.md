@@ -291,8 +291,49 @@ gradle --write-verification-metadata sha256
 
 ### Package cooldown enforcement
 
+Newly published package versions carry the highest risk — most supply chain attacks are detected within the first few days. Use one of these approaches to enforce a cooldown period:
+
+#### Renovate `minimumReleaseAge` (all ecosystems)
+
+```json
+// renovate.json — delays update PRs until packages have been published for 3 days
+{
+  "extends": ["config:recommended"],
+  "minimumReleaseAge": "3 days"
+}
+```
+
+This is the simplest option if you already use Renovate. It works for every ecosystem Renovate supports (npm, pip, Go, Cargo, Ruby, Maven, etc.). Dependabot does not currently have an equivalent setting.
+
+#### Aikido SafeChain (npm, pip)
+
+```bash
+# Install SafeChain — wraps package manager commands and blocks malicious packages
+curl -fsSL https://github.com/AikidoSec/safe-chain/releases/latest/download/install-safe-chain.sh | sh
+safe-chain setup
+# Restart your terminal
+
+# npm packages under 48 hours old are automatically held back
+# To customize the threshold:
+npm install some-package --safe-chain-minimum-package-age-hours=72
+```
+
+SafeChain only supports JavaScript (npm/pnpm/yarn/bun) and Python (pip/uv/poetry). It does not cover Go, Rust, Ruby, or JVM.
+
+#### Socket Firewall (npm, pip, cargo)
+
+```bash
+# Install Socket CLI
+npm install -g @socketsecurity/cli
+
+# Use as a registry proxy — blocks suspicious packages at install time
+# See https://docs.socket.dev/docs/socket-firewall-overview for setup
+```
+
+#### CI check (npm only)
+
 ```yaml
-# Block packages published in the last 7 days
+# GitHub Actions — block packages published in the last 7 days
 - name: Check package age
   run: |
     npx is-old-enough --days 7 || exit 1

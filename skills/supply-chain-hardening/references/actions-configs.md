@@ -12,10 +12,25 @@ Practical configs for securing GitHub Actions workflows.
 - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 ```
 
+### Resolve the correct SHA
+
+Most release tags are **annotated tags**, which have two SHAs — the tag object and the commit. Actions `uses:` needs the **commit SHA**. Use the dereferenced ref:
+
+```bash
+# Dereference annotated tag to get the commit SHA (not the tag object SHA)
+git ls-remote https://github.com/actions/checkout.git "refs/tags/v4.1.1^{}"
+# → b4ffde65f46336ab88eb53be808477a3936bae11
+
+# If empty result (lightweight tag), the non-dereferenced ref is already the commit SHA:
+git ls-remote https://github.com/actions/checkout.git refs/tags/v4.1.1
+```
+
+WARNING: Using `refs/tags/{tag}` without `^{}` on annotated tags returns the **tag object SHA**, not the commit SHA. Pinning to the tag object SHA will fail at runtime.
+
 ### Automate SHA pinning
 
 ```bash
-# Use StepSecurity's tool to pin all Actions in a workflow
+# Use StepSecurity's tool to pin all Actions in a workflow (handles dereferencing)
 npx pin-github-action .github/workflows/*.yml
 
 # Or use the web UI

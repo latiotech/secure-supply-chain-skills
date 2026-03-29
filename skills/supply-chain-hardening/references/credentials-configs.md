@@ -39,17 +39,19 @@ regexes = [
 ]
 ```
 
-## Pre-commit Hook Setup
+## Pre-commit Hook Setup (Optional)
 
-### Using pre-commit framework with gitleaks
+These are optional — `betterleaks --path .` is the primary scanning method. Pre-commit hooks add a second layer that catches secrets before they're committed.
+
+### Using pre-commit framework with betterleaks
 
 ```yaml
 # .pre-commit-config.yaml
 repos:
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+  - repo: https://github.com/betterleaks/betterleaks
+    rev: v0.1.0  # TODO: check latest version
     hooks:
-      - id: gitleaks
+      - id: betterleaks
 ```
 
 ```bash
@@ -58,7 +60,7 @@ pip install pre-commit
 pre-commit install
 
 # Run against all files (first-time scan)
-pre-commit run gitleaks --all-files
+pre-commit run betterleaks --all-files
 ```
 
 ### Standalone git hook (no framework)
@@ -66,7 +68,7 @@ pre-commit run gitleaks --all-files
 ```bash
 #!/bin/sh
 # .git/hooks/pre-commit
-# Requires betterleaks or gitleaks to be installed
+# Requires betterleaks to be installed
 
 if command -v betterleaks &> /dev/null; then
     betterleaks --path . --staged-only
@@ -74,12 +76,8 @@ if command -v betterleaks &> /dev/null; then
         echo "Secret detected in staged files. Commit blocked."
         exit 1
     fi
-elif command -v gitleaks &> /dev/null; then
-    gitleaks protect --staged
-    if [ $? -ne 0 ]; then
-        echo "Secret detected in staged files. Commit blocked."
-        exit 1
-    fi
+else
+    echo "Warning: betterleaks not installed. Install with: brew install betterleaks"
 fi
 ```
 
@@ -218,6 +216,98 @@ java -jar bfg.jar --replace-text passwords.txt repo.git
 3. All collaborators must re-clone (not just pull)
 4. Contact GitHub support to clear cached views
 5. **Most importantly**: rotate the exposed credential - it's already compromised
+
+## Commit and Tag Signing
+
+### SSH signing (Git 2.34+, recommended)
+
+```bash
+# Configure SSH signing
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519.pub
+git config --global commit.gpgsign true
+git config --global tag.gpgsign true
+
+# Set up allowed signers for local verification
+echo "your_email@example.com $(cat ~/.ssh/id_ed25519.pub)" >> ~/.config/git/allowed_signers
+git config --global gpg.ssh.allowedSignersFile ~/.config/git/allowed_signers
+```
+
+### GPG signing
+
+```bash
+# Generate key (if needed)
+gpg --full-generate-key  # RSA 4096, your Git email
+
+# Get key ID
+gpg --list-secret-keys --keyid-format=long
+# sec rsa4096/XXXXXXXXXXXXXXXX — the X's are your key ID
+
+# Configure
+git config --global user.signingkey XXXXXXXXXXXXXXXX
+git config --global commit.gpgsign true
+git config --global tag.gpgsign true
+
+# Export public key for GitHub
+gpg --armor --export XXXXXXXXXXXXXXXX
+```
+
+### Gitsign (keyless, Sigstore)
+
+```bash
+# Install
+brew install sigstore/tap/gitsign
+
+# Configure (per-repo)
+git config gpg.x509.program gitsign
+git config gpg.format x509
+git config commit.gpgsign true
+git config tag.gpgsign true
+```
+
+### Require signed commits via GitHub ruleset
+
+```bash
+# Repo-level ruleset
+gh api repos/{owner}/{repo}/rulesets -X POST --input - <<'EOF'
+{
+  "name": "Require signed commits",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main", "refs/heads/master"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    { "type": "required_signatures" }
+  ]
+}
+EOF
+
+# Org-level ruleset (all repos)
+gh api orgs/{org}/rulesets -X POST --input - <<'EOF'
+{
+  "name": "Require signed commits",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main", "refs/heads/master"],
+      "exclude": []
+    },
+    "repository_name": {
+      "include": ["~ALL"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    { "type": "required_signatures" }
+  ]
+}
+EOF
+```
 
 ## Credential Rotation Checklist
 

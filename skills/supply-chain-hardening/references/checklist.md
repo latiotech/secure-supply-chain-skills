@@ -7,7 +7,7 @@
 ### Do Right Now
 
 - [ ] **Pin all dependencies to specific versions** → [Pnpm Security Docs](https://pnpm.io/supply-chain-security) (applies to other languages and their package managers too)
-- [ ] **Require a package cooldown period** on your builds (don't auto-pull brand-new packages)
+- [ ] **Require a package cooldown period** on your builds (don't auto-pull brand-new packages) → [Renovate `minimumReleaseAge`](https://docs.renovatebot.com/configuration-options/#minimumreleaseage) · [Aikido SafeChain](https://github.com/AikidoSec/safe-chain) (JS/Python) · [Socket Firewall](https://docs.socket.dev/docs/socket-firewall-overview)
 - [ ] **Disable pre-install and post-install scripts** in your package manager → [Pnpm Secure Install](https://pnpm.io/supply-chain-security)
 
 ### Do Eventually
@@ -83,7 +83,7 @@
 - [ ] **Enable drift detection** to catch out-of-band changes → [Spacelift](https://spacelift.io/) · [env0](https://www.env0.com/)
 - [ ] **Lock down local-exec and external provisioners**
 - [ ] **Run all IaC applies through audited, ephemeral CI runners** → [Atlantis](https://www.runatlantis.io/) · [Terraform Cloud](https://developer.hashicorp.com/terraform/cloud-docs)
-- [ ] **Require signed commits** for IaC repos
+- [ ] **Require signed commits** for IaC repos → see `/setup-commit-signing`
 - [ ] **Build internal module libraries** with security-reviewed defaults
 - [ ] **Continuously reconcile running infrastructure** against declared state → [Crossplane](https://www.crossplane.io/) · [Firefly](https://www.firefly.ai/)
 
@@ -138,7 +138,7 @@
 
 ### Do Right Now
 
-- [ ] **Remove hardcoded credentials from code** - scan for API keys, private keys, connection strings, and tokens in source files → [Betterleaks](https://github.com/betterleaks/betterleaks) · [Gitleaks](https://github.com/gitleaks/gitleaks) · [TruffleHog](https://github.com/trufflesecurity/trufflehog)
+- [ ] **Remove hardcoded credentials from code** - scan for API keys, private keys, connection strings, and tokens in source files → [Betterleaks](https://github.com/betterleaks/betterleaks)
 - [ ] **Check git history for leaked secrets** - previously committed secrets are still exposed even if deleted from the working tree
 - [ ] **Ensure `.env` files are gitignored** - never commit environment files with credentials
 - [ ] **Use fine-grained PATs** instead of classic tokens - they support repo-level scoping and mandatory expiration → [GitHub Docs: Fine-grained PATs](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
@@ -146,9 +146,11 @@
 
 ### Do Eventually
 
+- [ ] **Enable commit and tag signing** - prevents commit impersonation and ensures code provenance → [GitHub Docs: Signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits) · [gitsign](https://github.com/sigstore/gitsign)
+- [ ] **Require signed commits on protected branches** - enforce via branch protection rules or repository rulesets
 - [ ] **Use a secrets manager** (Vault, AWS Secrets Manager, 1Password, etc.) instead of environment variables for sensitive values
 - [ ] **Prefer GitHub Apps over PATs** for automation - apps have granular permissions, audit logs, and installation-scoped tokens
 - [ ] **Have a credential rotation plan** - when one token leaks, assume lateral movement to npm, PyPI, Docker Hub, and extension marketplaces; plan for mass rotation
 - [ ] **Audit GitHub App installations** - flag apps with `repository_selection: "all"` or excessive permissions
-- [ ] **Set up pre-commit hooks for secret detection** - block secrets before they reach git history → [Gitleaks](https://github.com/gitleaks/gitleaks) · [pre-commit](https://pre-commit.com/)
+- [ ] **Consider pre-commit hooks for secret detection** - optional extra layer to block secrets before they reach git history → [Betterleaks](https://github.com/betterleaks/betterleaks) · [pre-commit](https://pre-commit.com/)
 - [ ] **Enable GitHub secret scanning push protection** - blocks pushes containing detected secret patterns

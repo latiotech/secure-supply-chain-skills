@@ -1,6 +1,6 @@
 ---
 description: Scan for leaked secrets, set up pre-commit hooks, and harden credential hygiene
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, betterleaks:*, gitleaks:*, trufflehog:*, pip:*, npx:*, curl:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, betterleaks:*, pip:*, npx:*, curl:*, which:*, brew:*, cargo:*)
 argument-hint: [directory]
 ---
 
@@ -21,26 +21,45 @@ Find credential-related files and patterns in the project (or $1 if a directory 
 
 If no credential-related findings are detected, report that and exit.
 
+## Prerequisites
+
+Credential-related files or patterns were found. Check if `betterleaks` is installed (`which betterleaks`).
+
+If **not installed**, tell the user:
+
+> **Recommended: install betterleaks** — a fast, low-false-positive secret scanner that catches leaked credentials, API keys, and tokens across your codebase and git history.
+>
+> ```bash
+> # macOS
+> brew install betterleaks
+> # or from source
+> cargo install betterleaks
+> ```
+>
+> Once installed, re-run this command for scanner-driven results. Continuing with pattern-based analysis for now.
+
 ## Actions to Take
 
 Work through these in order. **Make each change directly, explain what was done and why, then move to the next.**
 
-### 1. Run Betterleaks to scan for secrets (CRITICAL)
+### 1. Run Betterleaks secret scan (CRITICAL — if installed)
 
-Check if betterleaks is installed (`which betterleaks`). If available:
+If betterleaks is installed, run it:
 
 ```bash
 betterleaks --path .
 ```
 
-Report all findings grouped by severity. For each leaked secret:
+Parse and report all findings grouped by severity. For each leaked secret:
 - Show the file, line number, and rule that matched (redact the actual secret value)
 - Classify: test fixture, example/placeholder, or likely real credential
 - If it's a likely real credential, flag as **CRITICAL** and recommend immediate rotation
 
-If betterleaks is not installed, fall back to pattern-based scanning (see step 2). Mention betterleaks as the recommended tool for comprehensive scanning.
+Use Betterleaks output to prioritize the remaining steps. If Betterleaks already identified a secret that step 2 would catch, note it as "confirmed by Betterleaks" and skip the duplicate pattern check for that finding.
 
-### 2. Pattern-based secret scanning (CRITICAL)
+If betterleaks is not installed, rely entirely on the pattern-based scanning in step 2.
+
+### 2. Pattern-based secret scanning (CRITICAL — fallback or supplement)
 
 Regardless of whether betterleaks ran, scan for high-confidence patterns that tools sometimes miss:
 
@@ -96,24 +115,18 @@ For each file found in history:
 - Recommend: rotate the credential immediately, then use `git-filter-repo` or BFG Repo Cleaner to remove from history
 - Warn: all collaborators must re-clone after history rewriting
 
-### 5. Set up pre-commit hook for secret detection (HIGH)
+### 5. Suggest pre-commit hook for ongoing protection (MEDIUM)
 
-If a `.pre-commit-config.yaml` exists, check if it includes a secret scanning hook. If not, add one:
+If a `.pre-commit-config.yaml` already exists and doesn't include a secret scanning hook, **suggest** adding betterleaks:
 
 ```yaml
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+  - repo: https://github.com/betterleaks/betterleaks
+    rev: v0.1.0  # TODO: check latest version
     hooks:
-      - id: gitleaks
+      - id: betterleaks
 ```
 
-If `.pre-commit-config.yaml` doesn't exist but `.git/hooks/` does, create a basic pre-commit hook or recommend setting up pre-commit framework. **Do NOT overwrite an existing pre-commit hook.**
-
-If neither exists, recommend installing pre-commit:
-```bash
-pip install pre-commit
-pre-commit install
-```
+If no pre-commit config exists, mention that a betterleaks pre-commit hook is an option for catching secrets before they're committed — but do not create one automatically. The scan in step 1 is the primary defense.
 
 ### 6. Fix .env.example files (MEDIUM)
 
@@ -146,7 +159,7 @@ After making all changes, provide a summary:
 - [x] Scanned codebase with betterleaks - found N secrets
 - [x] Added N entries to .gitignore for sensitive file patterns
 - [x] Created .env.example with placeholder values
-- [x] Added gitleaks pre-commit hook to .pre-commit-config.yaml
+- [x] Suggested betterleaks pre-commit hook (if .pre-commit-config.yaml exists)
 - [x] Flagged N auth tokens in package manager configs
 
 ### Requires Manual Attention
@@ -157,6 +170,7 @@ After making all changes, provide a summary:
 
 ### Recommended Next Steps
 - Run `/audit-credentials` for a full credential audit including GitHub PATs and OIDC opportunities
+- Run `/setup-commit-signing` to sign commits and prevent impersonation
 - Run `/setup-oidc` to replace long-lived cloud credentials with OIDC tokens
 - Enable GitHub secret scanning push protection on your repository
 - Set up a secrets manager (Vault, AWS Secrets Manager, 1Password) for production credentials

@@ -218,15 +218,20 @@ Companion to the [Supply Chain Security Checklist](checklist.md). Open source an
 
 ## 🔑 Credentials & Secrets
 
+### Commit & Tag Signing
+
+| Tool | Type | What It Does |
+|------|------|-------------|
+| [Git SSH signing](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification) | Built-in | Sign commits with existing SSH keys (Git 2.34+); easiest setup for most teams |
+| [GPG signing](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits) | Built-in | Traditional commit signing with GPG keys; widest platform support |
+| [gitsign](https://github.com/sigstore/gitsign) | OSS | Keyless commit signing using OIDC identity (Sigstore); no keys to manage |
+
 ### Secret Scanning
 
 | Tool | Type | What It Does |
 |------|------|-------------|
 | [GitHub Secret Scanning](https://docs.github.com/en/code-security/secret-scanning/introduction/about-secret-scanning) | Built-in | Detects leaked secrets in repos; push protection blocks commits with secrets |
-| [Betterleaks](https://github.com/betterleaks/betterleaks) | OSS | Fast, accurate secret scanner with low false-positive rate; supports staged-only and history scanning |
-| [Gitleaks](https://github.com/gitleaks/gitleaks) | OSS | Scans git repos for hardcoded secrets and credentials; supports pre-commit hooks |
-| [TruffleHog](https://github.com/trufflesecurity/trufflehog) | OSS | Finds leaked credentials across git history, S3, GCS, and more; verifies if secrets are live |
-| [GitGuardian](https://www.gitguardian.com/) | Freemium | Real-time secret detection for repos and CI; free for public repos |
+| [Betterleaks](https://github.com/betterleaks/betterleaks) | OSS | **Recommended.** Fast, accurate secret scanner with low false-positive rate; supports staged-only and history scanning |
 
 ### Secrets Managers
 

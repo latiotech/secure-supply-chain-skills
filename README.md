@@ -31,7 +31,7 @@ Based on the [Latio](https://latio.com) Supply Chain Security Checklist
 Install the plugin by running this in your terminal:
 
 ```bash
-claude install-plugin https://github.com/confusedcrib/secure-open-source-malware-skills
+claude install-plugin https://github.com/confusedcrib/secure-supply-chain-skills
 ```
 
 ### Your First Audit
@@ -61,6 +61,8 @@ These commands **take action by default**. They scan your repo, make changes (pi
 | `/harden-ide-extensions` | Audit extensions, remove secrets from settings, add devcontainer config |
 | `/harden-credentials` | Scan for leaked secrets, set up pre-commit hooks, harden .gitignore, fix credential anti-patterns |
 | `/audit-credentials` | Find long-lived tokens, hardcoded secrets, credentials that should be rotated or replaced with OIDC |
+| `/update-pins` | Check pinned deps, Actions, images, and modules for newer versions — auto-updates patch/minor, flags majors with changelogs |
+| `/minimize` | Remove unused dependencies and convert Dockerfiles to multi-stage builds to reduce attack surface |
 
 ### Walkthrough Commands - Guided Setup for Advanced Items
 
@@ -73,6 +75,7 @@ These commands are **interactive walkthroughs** for configurations that require 
 | `/setup-tag-rulesets` | Protect release tags from force-push attacks (GitHub rulesets) |
 | `/setup-admission-control` | Enforce image policies in Kubernetes (Kyverno/OPA) |
 | `/setup-sbom` | Generate SBOMs and SLSA provenance attestations |
+| `/setup-commit-signing` | Set up commit and tag signing (SSH, GPG, or Sigstore gitsign) |
 | `/setup-runner-monitoring` | Add runtime detection to CI runners (StepSecurity/Falco) |
 
 ## How It Works
@@ -147,6 +150,7 @@ These commands are **interactive walkthroughs** for configurations that require 
 - Is a pre-commit hook set up to prevent future leaks?
 - Are long-lived cloud credentials replaceable with OIDC?
 - Are package manager auth tokens secured?
+- Are commits and tags signed to prevent impersonation?
 </details>
 
 ## The Skill
@@ -158,3 +162,12 @@ Beyond the slash commands, this plugin includes a `supply-chain-hardening` skill
 - Ready-to-use configuration snippets for all supported package managers and tools
 
 Just ask Claude something like *"How do I prevent dependency confusion attacks?"* and it will pull from this knowledge automatically.
+
+## Status and Contributing
+
+This plugin is a new initiative and actively evolving. Coverage, scanner integrations, and fix strategies will improve over time. If you run into issues, have ideas, or want to improve the checks:
+
+- **Open an issue**: [github.com/latiotech/secure-supply-chain-skills/issues](https://github.com/latiotech/secure-supply-chain-skills/issues)
+- **Submit a PR**: See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
+
+Feedback from real-world usage is especially valuable — if a check produces a false positive, misses something, or breaks your workflow, let us know.

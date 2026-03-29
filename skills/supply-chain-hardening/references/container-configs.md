@@ -13,8 +13,13 @@ FROM node:18-alpine
 # GOOD - pinned to specific digest
 FROM node:18-alpine@sha256:a1b2c3d4e5f6...
 
-# Find the current digest:
-# docker pull node:18-alpine && docker inspect --format='{{index .RepoDigests 0}}' node:18-alpine
+# Find the multi-arch manifest digest (works across platforms):
+# docker buildx imagetools inspect node:18-alpine --format '{{json .Manifest}}' | jq -r '.digest'
+#
+# Alternative: crane digest node:18-alpine
+#
+# WARNING: Do NOT use `docker pull` + `docker inspect` - that returns a
+# platform-specific digest (e.g., arm64 on Mac) which breaks linux/amd64 CI builds.
 ```
 
 ### Run as non-root

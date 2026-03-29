@@ -1,6 +1,6 @@
 ---
 description: Pin GitHub Actions to SHAs, fix permissions, and flag dangerous triggers
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, zizmor:*, pip:*, npx:*, curl:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, zizmor:*, pip:*, npx:*, curl:*, which:*, brew:*, cargo:*)
 ---
 
 Audit and harden GitHub Actions workflows for supply chain security. **This command takes action by default** - it pins Actions to commit SHAs, sets explicit permissions, and fixes script injection. Changes are explained as they are made.
@@ -16,35 +16,78 @@ Find all workflow files:
 
 If no workflow files are found, report that and exit.
 
+## Prerequisites
+
+Workflow files were found. Check if `zizmor` is installed (`which zizmor`).
+
+If **not installed**, tell the user:
+
+> **Recommended: install zizmor** — a purpose-built GitHub Actions security scanner that catches misconfigurations, injection vulnerabilities, and privilege issues that pattern-matching alone misses.
+>
+> ```bash
+> # macOS
+> brew install zizmor
+> # or with cargo
+> cargo install zizmor
+> # or with pip
+> pip install zizmor
+> ```
+>
+> Once installed, re-run this command for scanner-driven results. Continuing with pattern-based analysis for now.
+
 ## Actions to Take
 
 Work through these in order. **Make each change directly, explain what was done and why, then move to the next.**
 
-### 1. Pin all Actions to commit SHAs (CRITICAL)
+### 1. Run Zizmor (CRITICAL — if installed)
+
+If zizmor is installed, run it against all workflow files:
+
+```bash
+zizmor .github/workflows/
+```
+
+Parse and report findings grouped by severity. Use Zizmor's output to prioritize the fixes below — address scanner findings first before moving to pattern-based checks. If Zizmor already flagged an issue that a later step would catch, note it as "confirmed by Zizmor" and fix it in this step.
+
+### 2. Pin all Actions to commit SHAs (CRITICAL)
 
 Scan all `uses:` directives for Actions referenced by tag (`@v4`, `@main`) instead of full commit SHA.
 
 For each unpinned action:
-- Look up the current commit SHA for that tag using: `git ls-remote https://github.com/{owner}/{repo}.git refs/tags/{tag}`
-- If `git ls-remote` fails or returns empty (network issue, private repo, typo), add a `# TODO: pin to SHA - run: git ls-remote https://github.com/{owner}/{repo}.git refs/tags/{tag}` comment. **Never fabricate a SHA.**
-- Replace the tag reference with the full SHA, keeping the tag as a comment: `actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1`
+
+**Important: resolve the commit SHA, not the tag object SHA.** Most releases use annotated tags, which have two SHAs — the tag object and the commit it points to. GitHub Actions `uses:` requires the **commit SHA**. Use the dereferenced (`^{}`) ref:
+
+1. **Preferred** — dereference the tag to get the commit SHA:
+   ```bash
+   git ls-remote https://github.com/{owner}/{repo}.git "refs/tags/{tag}^{}"
+   ```
+   If this returns empty (lightweight tag), fall back to `refs/tags/{tag}` which is already the commit SHA.
+
+2. **Alternative** — use the GitHub API:
+   ```bash
+   gh api repos/{owner}/{repo}/git/ref/tags/{tag} --jq '.object.sha'
+   ```
+
+3. If both fail (network issue, private repo, typo), add a `# TODO: pin to SHA` comment. **Never fabricate a SHA.**
+
+- Replace the tag reference with the full commit SHA, keeping the tag as a comment: `actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1`
 - Explain: tags can be force-pushed to point at malicious code (this is exactly how the TeamPCP attack worked on 110+ repos)
 
-### 2. Set explicit permissions (HIGH)
+### 3. Set explicit permissions (HIGH)
 
 For each workflow file:
 - If there is no top-level `permissions:` key, add `permissions: contents: read` as a restrictive default
 - If `permissions: write-all` is set, replace with the minimum permissions needed based on what the steps actually do
 - Use the permission reference table from the actions-configs reference
 
-### 3. Flag and fix dangerous triggers (CRITICAL)
+### 4. Flag and fix dangerous triggers (CRITICAL)
 
 Search for `pull_request_target` triggers. For each:
 - Check if the workflow checks out PR head code (`ref: ${{ github.event.pull_request.head.sha }}`)
 - If it does, this is the exact TeamPCP attack pattern - **flag it prominently** and suggest switching to `pull_request` trigger or removing the PR head checkout
 - Do NOT auto-fix these - explain the risk and let the user decide, as changing triggers affects workflow behavior
 
-### 4. Fix script injection (HIGH)
+### 5. Fix script injection (HIGH)
 
 Search for `${{ github.event.* }}` used directly in `run:` blocks. These are injectable:
 - `${{ github.event.pull_request.title }}`
@@ -58,17 +101,11 @@ env:
 run: echo "$PR_TITLE"
 ```
 
-### 5. Add CODEOWNERS for workflow protection (MEDIUM)
+### 6. Add CODEOWNERS for workflow protection (MEDIUM)
 
 If `.github/CODEOWNERS` doesn't exist or doesn't cover `.github/workflows/`:
 - Create or update CODEOWNERS to add a rule for `.github/workflows/` and `.github/actions/`
 - Add a commented placeholder for the team name: `# .github/workflows/ @yourorg/security-team`
-
-### 6. Run Zizmor if available
-
-If zizmor is installed (check with `which zizmor`), run it against all workflows and report any additional findings not already addressed.
-
-If not installed, mention it as a recommended tool and move on (don't install it automatically).
 
 ### 7. Set up Dependabot for Actions updates
 

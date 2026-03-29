@@ -1,6 +1,6 @@
 ---
 description: Fix unsafe model deserialization and harden AI/ML model usage
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(pip:*, python:*, picklescan:*, modelscan:*, git:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(pip:*, python:*, modelscan:*, git:*, curl:*, which:*)
 argument-hint: [directory]
 ---
 
@@ -23,11 +23,37 @@ Find AI/ML model files and references in the project (or $1 if a directory is pr
 - References to `torch.load`, `pickle.load`, `joblib.load` in Python code
 - References to `huggingface`, `transformers`, `diffusers` in dependencies
 
+## Prerequisites
+
+AI/ML model files or references were found. Check if `modelscan` is installed (`which modelscan`).
+
+If **not installed** and unsafe model files (`.pkl`, `.pickle`, `.pt`, `.pth`, `.joblib`) were found, tell the user:
+
+> **Recommended: install modelscan** — scans serialized ML models for hidden malicious code, supporting pickle, PyTorch, TensorFlow, and Keras formats.
+>
+> ```bash
+> pip install modelscan
+> ```
+>
+> Once installed, re-run this command to scan model files for embedded payloads. Continuing with code-level analysis for now.
+
+If only safe formats (`.safetensors`, `.onnx`) or code references were found (no unsafe model files), skip this prerequisite — modelscan is not needed.
+
 ## Actions to Take
 
 Work through these in order. **Make each change directly, explain what was done and why, then move to the next.**
 
-### 1. Fix unsafe deserialization calls (CRITICAL)
+### 1. Scan model files with ModelScan (CRITICAL — if installed and unsafe model files exist)
+
+If modelscan is installed and `.pkl`, `.pickle`, `.pt`, `.pth`, or `.joblib` files were found, run it against each:
+
+```bash
+modelscan --path {file}
+```
+
+Parse and report findings. Any model file flagged as containing executable code should be treated as **CRITICAL** — it may contain an embedded payload that runs on `torch.load()` or `pickle.load()`.
+
+### 2. Fix unsafe deserialization calls (CRITICAL)
 
 Search all Python files and fix each occurrence:
 
@@ -39,14 +65,14 @@ Search all Python files and fix each occurrence:
 - `joblib.load(path)` → flag and suggest alternatives (joblib uses pickle internally)
 - `pd.read_pickle(path)` → flag and suggest `pd.read_parquet()` or `pd.read_csv()` alternatives
 
-### 2. Flag committed model files (CRITICAL)
+### 3. Flag committed model files (CRITICAL)
 
 Flag any `.pkl`, `.pickle`, `.pt`, `.pth`, `.joblib` files committed to git:
 - Add them to `.gitignore`
 - Explain: binary model files should not be in git (use Git LFS, a model registry, or cloud storage)
 - Note: don't delete the files - the user needs to migrate them first
 
-### 3. Add hash verification to model downloads (HIGH)
+### 4. Add hash verification to model downloads (HIGH)
 
 Search for model download code (requests, urllib, wget, curl, `huggingface_hub.hf_hub_download`). For each:
 - If downloading a model without verifying its hash, add hash verification after download
@@ -59,21 +85,13 @@ Search for model download code (requests, urllib, wget, curl, `huggingface_hub.h
   assert actual_hash == expected_hash, f"Model hash mismatch: {actual_hash}"
   ```
 
-### 4. Pin model sources (HIGH)
+### 5. Pin model sources (HIGH)
 
 For Hugging Face model references:
 - Ensure `revision=` parameter specifies a commit hash, not a branch name
 - Resolve the current commit hash using the Hugging Face API: `curl -s https://huggingface.co/api/models/{org}/{model} | jq .sha`
 - If the API query fails, add a `# TODO: pin revision to commit hash - check https://huggingface.co/{org}/{model}/commits/main` comment. **Never fabricate a model revision hash.**
 - Add `trust_remote_code=False` where applicable (prevents executing arbitrary code from model repos)
-
-### 5. Run available scanners
-
-If any of these tools are installed, run them against found model files:
-- `picklescan --path {file}`
-- `modelscan --path {file}`
-
-If not installed but model files are found, note the tools as strongly recommended.
 
 ## Output
 
@@ -94,7 +112,7 @@ After making all changes, provide a summary:
 - [ ] Add hash verification for model downloaded at [file:line]
 
 ### Recommended Next Steps
-- Install picklescan and modelscan for automated model scanning
+- If modelscan was not installed, install it (`pip install modelscan`) and re-run for deeper model scanning
 - Set up a private model registry with access controls
 - Consider sandboxed model loading environments
 ```

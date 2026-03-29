@@ -9,6 +9,8 @@ A Claude Code plugin for auditing and hardening software supply chains.
 commands/                     - Slash commands (one .md per command)
   audit-supply-chain.md       - Full audit + auto-fix (entry point)
   audit-credentials.md        - Credential and token audit
+  update-pins.md              - Update pinned deps/actions/images to latest versions
+  minimize.md                 - Remove unused deps and convert to multi-stage Docker builds
   harden-*.md                 - Domain-specific action commands
   setup-*.md                  - Interactive walkthrough commands
 skills/supply-chain-hardening/

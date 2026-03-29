@@ -53,11 +53,33 @@ Check if the lockfile exists and is not in `.gitignore`. If the lockfile is giti
 - Remove it from `.gitignore`
 - Explain that lockfiles must be committed to ensure reproducible builds
 
-### 4. Add registry scoping (MEDIUM)
+### 4. Check for package cooldown enforcement (MEDIUM)
+
+Check whether the project has any mechanism to avoid installing freshly-published packages — the highest-risk window for supply chain attacks. Look for:
+
+- `renovate.json` or `renovate.json5` containing `minimumReleaseAge`
+- SafeChain installed (`which safe-chain`)
+- Socket Firewall configuration
+- CI steps that check package age
+
+If **none are found**, flag this in the summary and recommend an approach based on the project's setup:
+
+- **If the project already uses Renovate**: suggest adding `"minimumReleaseAge": "3 days"` to `renovate.json` — this is the lowest-friction option and covers all ecosystems.
+- **If the project uses Dependabot**: note that Dependabot doesn't have an equivalent setting. Suggest switching to Renovate or adding SafeChain/Socket Firewall alongside it.
+- **If npm/pnpm/yarn or pip/uv/poetry**: suggest [Aikido SafeChain](https://github.com/AikidoSec/safe-chain) — it enforces a 48hr cooldown on new npm packages and blocks known-malicious packages at install time for JS and Python.
+- **For all other ecosystems** (Go, Rust, Ruby, JVM): suggest Renovate `minimumReleaseAge` as the primary option.
+
+Explain **why** this matters: lockfiles pin versions but don't enforce age. When a developer runs `npm install new-package` or updates a dependency, the freshly-published version gets locked in immediately. A cooldown period gives the community time to detect compromised releases before they reach your lockfile.
+
+Do NOT auto-configure this — it depends on the team's workflow. Flag it and recommend.
+
+See `${CLAUDE_PLUGIN_ROOT}/skills/supply-chain-hardening/references/package-configs.md` for configuration examples.
+
+### 5. Add registry scoping (MEDIUM)
 
 If the project uses scoped packages (e.g., `@yourorg/`), check for registry scoping in `.npmrc` or equivalent. If missing, add a commented-out template and explain how to configure it to prevent dependency confusion attacks.
 
-### 5. Run available scanners
+### 6. Run available scanners
 
 If any of these tools are installed, run them and report results:
 - `npm audit` / `pnpm audit` / `yarn audit`
@@ -84,4 +106,5 @@ After making all changes, provide a summary:
 ### Recommended Next Steps
 - Run `/setup-sbom` to generate a Software Bill of Materials
 - Set up Dependabot or Renovate to keep pinned versions current
+- **For JavaScript/Python projects**: install [Aikido SafeChain](https://github.com/AikidoSec/safe-chain) to block malicious packages at install time (`curl -fsSL https://github.com/AikidoSec/safe-chain/releases/latest/download/install-safe-chain.sh | sh`)
 ```

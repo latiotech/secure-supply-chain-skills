@@ -4,12 +4,12 @@ description: >
   Use this skill when the user asks to "harden supply chain", "secure dependencies",
   "pin versions", "audit packages", "secure GitHub Actions", "harden containers",
   "secure IaC", "audit extensions", "secure AI models", "audit pickle files",
-  "scan for secrets", "harden credentials", "rotate tokens", "audit credentials", or
+  "scan for secrets", "harden credentials", "rotate tokens", "audit credentials",
+  "sign commits", "commit signing", "signed commits", "gitsign", or
   needs guidance on software supply chain security, dependency management,
   credential hygiene, secret scanning, or preventing supply chain attacks. Also
   trigger when the user mentions tools like Grype, Cosign, Sigstore, Checkov,
-  Hadolint, Zizmor, Picklescan, ModelScan, SafeTensors, Betterleaks, Gitleaks,
-  TruffleHog, or references SLSA.
+  Hadolint, Zizmor, ModelScan, SafeTensors, Betterleaks, gitsign, or references SLSA.
 version: 0.2.0
 ---
 
@@ -34,6 +34,8 @@ These commands scan the codebase, make changes directly (pin hashes, fix configs
 - `/harden-ide-extensions` - Audit extensions, remove secrets, add devcontainer
 - `/harden-credentials` - Scan for leaked secrets, set up pre-commit hooks, harden credential hygiene
 - `/audit-credentials` - Find long-lived tokens, hardcoded secrets, credentials to rotate or replace
+- `/update-pins` - Check all pinned deps/actions/images for newer versions and update them
+- `/minimize` - Remove unused dependencies and convert Dockerfiles to multi-stage builds
 
 ### Walkthrough Commands - Guided Setup for Advanced Items
 
@@ -44,6 +46,7 @@ These commands are interactive walkthroughs for configurations that require step
 - `/setup-tag-rulesets` - Protect tags from force-push attacks
 - `/setup-admission-control` - Enforce image policies in Kubernetes
 - `/setup-sbom` - Generate SBOMs and provenance attestations
+- `/setup-commit-signing` - Set up commit and tag signing (SSH, GPG, or gitsign)
 - `/setup-runner-monitoring` - Add runtime detection to CI runners
 
 ## Reference Material
@@ -60,7 +63,7 @@ These commands are interactive walkthroughs for configurations that require step
 ## Core Principles
 
 1. **Pin everything.** Versions, digests, commit SHAs. Floating references are attack surface.
-2. **Never fabricate pins.** Always resolve versions, SHAs, and digests from live sources (lockfiles, `git ls-remote`, `docker inspect`, registry APIs). If resolution fails, add a `# TODO: pin` comment with the exact command the user should run - never guess a value.
+2. **Never fabricate pins. Resolve deterministically.** Always resolve versions, SHAs, and digests from live sources. Use methods that produce the same result regardless of local platform or environment: `docker buildx imagetools inspect` for multi-arch manifest digests (not `docker pull`/`docker inspect` which are platform-specific), `git ls-remote refs/tags/{tag}^{}` to dereference annotated tags to commit SHAs (not the tag object SHA). If resolution fails, add a `# TODO: pin` comment with the exact command the user should run — never guess a value.
 3. **Least privilege everywhere.** Tokens, permissions, workflow scopes, container users.
 4. **Verify provenance.** Sign artifacts, check signatures, require attestations.
 5. **Detect at runtime.** Scanning at build time isn't enough - monitor what actually runs.
@@ -87,7 +90,7 @@ Never load untrusted pickles. Use SafeTensors/ONNX. Verify model hashes. Scan wi
 Audit installed extensions. Use osquery for fleet visibility. Enforce allowlists. Use VS Code Profiles. Run dev environments in containers.
 
 ### Credentials & Secrets
-Scan for leaked secrets with Betterleaks. Set up pre-commit hooks to prevent future leaks. Harden .gitignore. Rotate compromised credentials. Replace long-lived tokens with OIDC where possible. See `references/credentials-configs.md`.
+Scan for leaked secrets with Betterleaks. Set up pre-commit hooks to prevent future leaks. Harden .gitignore. Rotate compromised credentials. Replace long-lived tokens with OIDC where possible. Sign commits to prevent impersonation. See `references/credentials-configs.md`.
 
 ## When Making Changes
 
