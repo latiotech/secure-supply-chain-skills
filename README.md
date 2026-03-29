@@ -28,11 +28,14 @@ Based on the [Latio](https://latio.com) Supply Chain Security Checklist
 
 ### Installation
 
-Install the plugin by running this in your terminal:
+Add the marketplace and install the plugin from within Claude Code:
 
-```bash
-claude install-plugin https://github.com/confusedcrib/secure-supply-chain-skills
 ```
+/plugin marketplace add confusedcrib/secure-supply-chain-skills
+/plugin install supply-chain-security@secure-supply-chain
+```
+
+After installing, run `/reload-plugins` to activate the plugin.
 
 ### Your First Audit
 

@@ -1,0 +1,16 @@
+{
+  "name": "secure-supply-chain",
+  "owner": {
+    "name": "Latio"
+  },
+  "metadata": {
+    "description": "Audit and harden your software supply chain"
+  },
+  "plugins": [
+    {
+      "name": "supply-chain-security",
+      "source": ".",
+      "description": "Audit and harden your software supply chain - packages, containers, GitHub Actions, IaC, AI/ML models, and IDE extensions."
+    }
+  ]
+}
