@@ -9,7 +9,10 @@
   "plugins": [
     {
       "name": "supply-chain-security",
-      "source": ".",
+      "source": {
+        "source": "github",
+        "repo": "latiotech/secure-supply-chain-skills"
+      },
       "description": "Audit and harden your software supply chain - packages, containers, GitHub Actions, IaC, AI/ML models, and IDE extensions."
     }
   ]

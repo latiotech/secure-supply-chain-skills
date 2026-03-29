@@ -28,6 +28,8 @@ Based on the [Latio](https://latio.com) Supply Chain Security Checklist
 
 ### Installation
 
+> **Note:** This plugin is pending addition to the official Claude Code marketplace. In the meantime, you can install it directly using the self-hosted marketplace below. Once it's in the official marketplace, you'll be able to install it with just `/plugin install supply-chain-security`.
+
 Add the marketplace and install the plugin from within Claude Code:
 
 ```
