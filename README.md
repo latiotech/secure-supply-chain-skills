@@ -25,6 +25,7 @@ Based on the [Latio](https://latio.com) Supply Chain Security Checklist
 ### Prerequisites
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and working
+- [SSH access to GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) configured (the plugin installer clones via SSH)
 
 ### Installation
 
