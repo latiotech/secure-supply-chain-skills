@@ -1,6 +1,6 @@
 ---
 description: Run a full supply chain security audit across all domains
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, npm:*, pnpm:*, yarn:*, pip:*, docker:*, terraform:*, tofu:*, gh:*, which:*, betterleaks:*, zizmor:*, hadolint:*, checkov:*, modelscan:*)
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, npm:*, pnpm:*, yarn:*, pip:*, docker:*, terraform:*, tofu:*, gh:*, which:*, betterleaks:*, zizmor:*, hadolint:*, checkov:*, modelscan:*, curl:*)
 ---
 
 Run a comprehensive supply chain security audit across the entire project. This is the "start here" command - it detects what's in the repo, checks everything, and **takes immediate action on the highest-priority items**.
@@ -85,8 +85,29 @@ For each detected domain, run the highest-priority checks:
 - Check for committed model files
 
 ### IDE Extensions
-- Check recommended extensions for verified publishers
-- Scan for secrets in workspace settings
+- Parse `.vscode/extensions.json` and `.devcontainer/devcontainer.json` for recommended extension IDs
+- Query the VS Code Marketplace API to validate each extension:
+  ```bash
+  curl -s -X POST \
+    'https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery' \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: application/json;api-version=7.2-preview.1' \
+    -d '{
+      "filters": [{
+        "criteria": [{ "filterType": 7, "value": "EXTENSION_ID" }],
+        "pageNumber": 1, "pageSize": 1, "sortBy": 0, "sortOrder": 0
+      }],
+      "assetTypes": [],
+      "flags": 914
+    }'
+  ```
+  To batch multiple extensions, add multiple criteria entries with `filterType: 7` in a single request (adjust `pageSize` to match).
+- For each extension, check:
+  - **Verified publisher** — `publisher.isDomainVerified` should be `true`. Flag as **HIGH** if unverified.
+  - **Install count** — in `statistics` array, find `statisticName: "install"`. Flag as **MEDIUM** if under 10,000 installs.
+  - **Staleness** — `lastUpdated` field. Flag as **MEDIUM** if not updated in over 2 years.
+  - **Removed/missing** — if the API returns no results for an extension ID, flag as **CRITICAL** (extension may have been pulled from the marketplace).
+- Scan `.vscode/settings.json` and workspace configs for secrets
 
 ### Credentials
 - If betterleaks is installed, run `betterleaks --path .` and include findings
