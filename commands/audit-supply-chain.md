@@ -48,7 +48,7 @@ For each detected domain, check if its scanner is installed. Collect all missing
 
 Only list scanners that are (a) relevant to detected domains and (b) not already installed. If all relevant scanners are installed, skip this section entirely.
 
-**Wait for the user to respond before proceeding to Phase 2.** If the user wants to install scanners, install them first. If they decline or want to move on, continue with pattern-based analysis for domains without scanners.
+**Attempt to install any missing scanners automatically** using the install commands listed above. Report what was installed successfully and what failed. Then continue to Phase 2, using pattern-based analysis as a fallback for any domain whose scanner failed to install.
 
 ## Phase 2: Quick Audit
 
