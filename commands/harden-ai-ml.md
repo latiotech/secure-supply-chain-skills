@@ -1,7 +1,7 @@
 ---
 description: Fix unsafe model deserialization and harden AI/ML model usage
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(pip:*, python:*, modelscan:*, git:*, curl:*, which:*)
-argument-hint: [directory]
+argument-hint: "[directory]"
 ---
 
 Audit and harden AI/ML model usage for supply chain security. **This command takes action by default** - it fixes unsafe deserialization calls, flags dangerous model files, and adds hash verification. Changes are explained as they are made.

@@ -1,7 +1,7 @@
 ---
 description: Check pinned dependencies, actions, and images for newer versions and update their pins
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, npm:*, pnpm:*, yarn:*, pip:*, docker:*, terraform:*, tofu:*, curl:*, which:*, jq:*)
-argument-hint: [domain: packages|actions|containers|iac|all]
+argument-hint: "[domain: packages|actions|containers|iac|all]"
 ---
 
 Check all pinned dependencies for available updates, assess migration difficulty, and update pins to the latest versions. **This command takes action by default** — it resolves new SHAs and digests, flags breaking changes, and updates pins. Changes are explained as they are made.

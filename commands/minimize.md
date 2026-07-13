@@ -1,7 +1,7 @@
 ---
 description: Remove unused dependencies and convert Dockerfiles to multi-stage builds to reduce attack surface
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(npm:*, pnpm:*, yarn:*, pip:*, go:*, cargo:*, bundle:*, docker:*, git:*, which:*, depcheck:*, dpdm:*)
-argument-hint: [domain: packages|containers|all]
+argument-hint: "[domain: packages|containers|all]"
 ---
 
 Reduce attack surface by removing unused dependencies and minimizing container images. **This command takes action by default** — it identifies dead dependencies and removes them, and converts single-stage Dockerfiles to multi-stage builds. Changes are explained as they are made.

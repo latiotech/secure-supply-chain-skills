@@ -1,7 +1,7 @@
 ---
 description: Scan for leaked secrets, set up pre-commit hooks, and harden credential hygiene
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*, gh:*, betterleaks:*, pip:*, npx:*, curl:*, which:*, brew:*, cargo:*)
-argument-hint: [directory]
+argument-hint: "[directory]"
 ---
 
 Audit and harden credential hygiene across the project. **This command takes action by default** - it scans for leaked secrets, adds protective gitignore rules, sets up pre-commit hooks, and fixes credential anti-patterns. Changes are explained as they are made.
