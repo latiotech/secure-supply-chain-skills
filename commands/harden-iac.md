@@ -1,7 +1,7 @@
 ---
 description: Pin Terraform modules, check state security, and flag dangerous provisioners
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(terraform:*, tofu:*, checkov:*, git:*, curl:*, which:*, pip:*, brew:*)
-argument-hint: [directory]
+argument-hint: "[directory]"
 ---
 
 Audit and harden Infrastructure-as-Code configurations for supply chain security. **This command takes action by default** - it pins module versions, generates lockfiles, and flags dangerous provisioners. Changes are explained as they are made.

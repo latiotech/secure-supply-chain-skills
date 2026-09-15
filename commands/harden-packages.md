@@ -1,7 +1,7 @@
 ---
 description: Pin dependency versions, disable install scripts, and secure registry configs
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(npm:*, pnpm:*, yarn:*, pip:*, pip-compile:*, uv:*, go:*, cargo:*, bundle:*, git:*, docker:*)
-argument-hint: [package-manager]
+argument-hint: "[package-manager]"
 ---
 
 Harden the project's package manager configuration for supply chain security. **This command takes action by default** - it pins versions, disables scripts, and secures configs. Changes are explained as they are made.

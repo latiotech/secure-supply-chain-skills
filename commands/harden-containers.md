@@ -1,7 +1,7 @@
 ---
 description: Pin base images by digest, enforce non-root, and harden Dockerfiles
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(docker:*, hadolint:*, git:*, which:*, brew:*)
-argument-hint: [Dockerfile-path]
+argument-hint: "[Dockerfile-path]"
 ---
 
 Audit and harden container images for supply chain security. **This command takes action by default** - it pins base images to digests, adds non-root users, and fixes Dockerfile issues. Changes are explained as they are made.
